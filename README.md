@@ -12,11 +12,15 @@ A:
 ### Steps
 
 1. Activate conda environment
-```bash
-source activate aind
-```
+
+  ```bash
+  source activate aind
+  ```
+
 2. Write a program for constraint propagation for:
+
   a. naked twins problem
+
   b. diagonal sudoku problem
 
 ### Visualizing
