@@ -1,4 +1,6 @@
 assignments = []
+rows = 'ABCDEFGHI'
+cols = '123456789'
 
 def assign_value(values, box, value):
     """
@@ -22,9 +24,18 @@ def naked_twins(values):
     # Find all instances of naked twins
     # Eliminate the naked twins as possibilities for their peers
 
-def cross(A, B):
+def cross(a, b):
     "Cross product of elements in A and elements in B."
     return [s+t for s in a for t in b]
+
+boxes = cross(rows, cols)
+
+row_units = [cross(r, cols) for r in rows]
+column_units = [cross(rows, c) for c in cols]
+square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
+unitlist = row_units + column_units + square_units
+units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
+peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)
 
 def grid_values(grid):
     """
@@ -90,7 +101,33 @@ def reduce_puzzle(values):
     return values
 
 def search(values):
-    pass
+    "Using depth-first search and propagation, create a search tree and solve the sudoku."
+    # First, reduce the puzzle using the previous function
+    new_values = values.copy()
+    # print(sorted(new_values, key=lambda k: len(new_values[k])))
+    new_values = reduce_puzzle(new_values)
+    # sorted = sorted(new_values, key=lambda k: len(new_values[k]))
+    if new_values:
+        # Choose one of the unfilled squares with the fewest possibilities
+        unsolved_boxes = [box for box in new_values.keys() if len(new_values[box]) > 1]
+        if len(unsolved_boxes) == 0:
+            return new_values
+
+        # Now use recursion to solve each one of the resulting sudokus,
+        else:
+            # sort by length of options
+            chosen_box = unsolved_boxes[0]
+            for d in new_values[chosen_box]:
+                # pick a value
+                new_values[chosen_box] = d
+                # do it again
+                resulting_values = search(new_values)
+
+                # and if one returns a value (not False), return that answer!
+                if resulting_values:
+                    return resulting_values
+    else:
+        return False
 
 def solve(grid):
     """
@@ -101,6 +138,7 @@ def solve(grid):
     Returns:
         The dictionary representation of the final sudoku grid. False if no solution exists.
     """
+    return search(grid_values(grid))
 
 if __name__ == '__main__':
     diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
