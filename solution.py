@@ -94,6 +94,7 @@ def display(values):
     print
 
 def eliminate(values):
+    "Uses the solved boxes' values to eliminate the digits from the peers."
     solved_values = [box for box in values.keys() if len(values[box]) == 1]
     for box in solved_values:
         digit = values[box]
@@ -102,6 +103,10 @@ def eliminate(values):
     return values
 
 def only_choice(values):
+    """
+    Looks through the boxes in each unit for digits that only
+    appear once and assigns that value to the box.
+    """
     for unit in unitlist:
         for digit in '123456789':
             dplaces = [box for box in unit if digit in values[box]]
@@ -110,6 +115,10 @@ def only_choice(values):
     return values
 
 def reduce_puzzle(values):
+    """
+    Repeats the eliminate, only_choice and naked_twins steps
+    untill the puzzle cannot be reduced any further.
+    """
     solved_values = [box for box in values.keys() if len(values[box]) == 1]
     stalled = False
     while not stalled:
