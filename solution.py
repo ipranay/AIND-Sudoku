@@ -2,28 +2,6 @@ assignments = []
 rows = 'ABCDEFGHI'
 cols = '123456789'
 
-def assign_value(values, box, value):
-    """
-    Please use this function to update your values dictionary!
-    Assigns a value to a given box. If it updates the board record it.
-    """
-    values[box] = value
-    if len(value) == 1:
-        assignments.append(values.copy())
-    return values
-
-def naked_twins(values):
-    """Eliminate values using the naked twins strategy.
-    Args:
-        values(dict): a dictionary of the form {'box_name': '123456789', ...}
-
-    Returns:
-        the values dictionary with the naked twins eliminated from peers.
-    """
-
-    # Find all instances of naked twins
-    # Eliminate the naked twins as possibilities for their peers
-
 def cross(a, b):
     "Cross product of elements in A and elements in B."
     return [s+t for s in a for t in b]
@@ -44,6 +22,42 @@ diagonal_units = [zip_strings(rows, cols), zip_strings(rows, cols[::-1])]
 unitlist = row_units + column_units + square_units + diagonal_units
 units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
 peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)
+
+def assign_value(values, box, value):
+    """
+    Please use this function to update your values dictionary!
+    Assigns a value to a given box. If it updates the board record it.
+    """
+    values[box] = value
+    if len(value) == 1:
+        assignments.append(values.copy())
+    return values
+
+def naked_twins(values):
+    """Eliminate values using the naked twins strategy.
+    Args:
+        values(dict): a dictionary of the form {'box_name': '123456789', ...}
+
+    Returns:
+        the values dictionary with the naked twins eliminated from peers.
+    """
+    for unit in unitlist:
+        two_boxes = [box for box in unit if len(values[box]) == 2]
+        twin_boxes = []
+        for box1 in two_boxes:
+            for box2 in two_boxes:
+                if box1 != box2 and values[box1] == values[box2]:
+                    twin_boxes.append(box1)
+
+        twin_boxes = list(set(twin_boxes))
+        if len(twin_boxes) == 2:
+            digits = values[twin_boxes[0]]
+            for unit_box in unit:
+                new_value = ''.join(sorted(list(set(values[unit_box]) - set(digits))))
+                if(len(new_value) > 0 and len(values[unit_box]) != len(new_value)):
+                    values = assign_value(values, unit_box, new_value)
+
+    return values
 
 def grid_values(grid):
     """
@@ -102,6 +116,7 @@ def reduce_puzzle(values):
         solved_values_before = len([box for box in values.keys() if len(values[box]) == 1])
         values = eliminate(values)
         values = only_choice(values)
+        values = naked_twins(values)
         solved_values_after = len([box for box in values.keys() if len(values[box]) == 1])
         stalled = solved_values_before == solved_values_after
         if len([box for box in values.keys() if len(values[box]) == 0]):
